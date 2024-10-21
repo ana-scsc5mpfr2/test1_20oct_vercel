@@ -1,38 +1,278 @@
-.App {
+/* General Styles */
+body {
+  font-family: 'Roboto', sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #0c0e14;
+  color: #e6e6e6;
+  line-height: 1.6;
+}
+
+a {
+  color: #1abc9c;
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+a:hover {
+  color: #16a085;
+}
+
+/* Header */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 40px;
+  background-color: #1f2229;
+  color: #e6e6e6;
+  position: fixed;
+  width: 100%;
+  top: 0;
+  z-index: 1000;
+  box-sizing: border-box;
+}
+
+.logo {
+  font-size: 1.5em;
+  font-weight: bold;
+}
+
+.nav ul {
+  list-style: none;
+  display: flex;
+  gap: 30px;
+  margin: 0;
+  padding: 0;
+}
+
+.nav ul li a {
+  color: #e6e6e6;
+  font-weight: bold;
+  transition: color 0.3s;
+}
+
+.nav ul li a:hover {
+  color: #1abc9c;
+}
+
+/* Hero Section */
+.hero {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0 20px;
+  background-color: #1a1d24;
+  margin-top: 60px;
+}
+
+.hero-content {
+  max-width: 700px;
+  margin: auto;
+  background-color: rgba(0, 0, 0, 0.6);
+  padding: 30px;
+  border-radius: 15px;
+}
+
+.hero-content h1 {
+  font-size: 2.5em;
+  margin-bottom: 20px;
+}
+
+.btn-cta {
+  display: inline-block;
+  background-color: #1abc9c;
+  color: #0c0e14;
+  padding: 15px 30px;
+  border-radius: 30px;
+  font-weight: bold;
+  transition: background-color 0.3s;
+  margin-top: 20px;
+}
+
+.btn-cta:hover {
+  background-color: #16a085;
+}
+
+/* Features */
+.features {
+  display: flex;
+  justify-content: space-around;
+  padding: 80px 40px;
+  background-color: #12141b;
+  flex-wrap: wrap;
+}
+
+.feature {
+  text-align: center;
+  max-width: 300px;
+  margin: 20px;
+}
+
+.feature h3 {
+  color: #1abc9c;
+  margin-bottom: 15px;
+}
+
+/* Modelos Section */
+.modelos {
+  padding: 80px 20px;
+  background-color: #0c0e14;
   text-align: center;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+.modelos-nav {
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  gap: 20px;
+  margin-top: 40px;
 }
 
-.App-link {
-  color: #61dafb;
+.modelos-nav button {
+  background-color: transparent;
+  border: none;
+  font-size: 2.5em;
+  color: #1abc9c;
+  cursor: pointer;
+  transition: color 0.3s;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
+.modelos-nav button:hover {
+  color: #16a085;
+}
+
+.modulo-content {
+  flex: 1;
+  max-width: 600px;
+  margin: 0 20px;
+}
+
+.modulo h2 {
+  color: #1abc9c;
+  margin-bottom: 20px;
+}
+
+/* About Us Section */
+.about-us {
+  padding: 80px 40px;
+  background-color: #12141b;
+  text-align: center;
+}
+
+.about-us h2 {
+  margin-bottom: 40px;
+  color: #1abc9c;
+}
+
+.equipo {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 40px;
+}
+
+.miembro {
+  text-align: center;
+  max-width: 300px;
+  padding: 20px;
+  border: 1px solid #1abc9c;
+  border-radius: 10px;
+  background-color: #1f2229;
+}
+
+.miembro img {
+  border-radius: 50%;
+  width: 150px;
+  height: 150px;
+  object-fit: cover;
+  margin-bottom: 15px;
+}
+
+.miembro h3 {
+  color: #1abc9c;
+  margin-bottom: 10px;
+}
+
+.rol {
+  font-weight: bold;
+  margin: 10px 0;
+}
+
+.email {
+  font-size: 0.9em;
+  color: #82a9e7;
+  margin-bottom: 15px;
+}
+
+/* Footer */
+.footer {
+  background-color: #1f2229;
+  color: #e6e6e6;
+  padding: 40px;
+  text-align: center;
+}
+
+.footer-content {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.footer-links {
+  margin-bottom: 20px;
+}
+
+.footer-links a {
+  margin: 0 15px;
+}
+
+.social {
+  margin-bottom: 20px;
+}
+
+.social a {
+  margin: 0 10px;
+  color: #1abc9c;
+}
+
+.social a:hover {
+  color: #16a085;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    padding: 10px;
   }
-  to {
-    transform: rotate(360deg);
+  
+  .nav ul {
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 10px;
+    text-align: center;
+  }
+  
+  .hero {
+    margin-top: 120px;
+  }
+  
+  .hero-content h1 {
+    font-size: 2em;
+  }
+  
+  .features {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .feature {
+    margin-bottom: 40px;
+  }
+  
+  .miembro {
+    width: 100%;
   }
 }
