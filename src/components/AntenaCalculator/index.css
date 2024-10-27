@@ -1,0 +1,320 @@
+/* Base styles and variables */
+:root {
+    --bg-primary: #0f1116;
+    --bg-secondary: #1a1d24;
+    --bg-tertiary: #252a34;
+    --text-primary: #ffffff;
+    --text-secondary: #a0a0b0;
+    --accent: #3b82f6;
+    --accent-hover: #2563eb;
+    --error: #ef4444;
+    --success: #22c55e;
+    --border: #2d3340;
+    --shadow: rgba(0, 0, 0, 0.2);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    line-height: 1.5;
+    min-height: 100vh;
+}
+
+/* App Container */
+.app-container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+
+/* Header Styles */
+.app-header {
+    text-align: center;
+    margin-bottom: 3rem;
+    padding: 2rem 0;
+}
+
+.app-header h1 {
+    font-size: 1rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    background: var(--text-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 2px 4px var(--shadow);
+}
+
+.app-header p {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+}
+
+/* Main Content */
+.app-main {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+/* Upload Section */
+.upload-section {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1rem;
+}
+
+.hidden {
+    display: none;
+}
+
+.show-results-btn {
+    align-items: center;
+    background-color: #c7fcec !important;
+    padding: 0.55rem 1rem;
+    border: none;
+    border-radius: 0.5rem;
+    font-size: 1rem !important;
+    font-weight: 500;
+    cursor: pointer;
+    box-shadow: 0 2px 4px var(--shadow);
+    margin-top: 1rem;
+}
+
+.upload-button {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background-color: #c7fcec !important;
+    color: white;
+    padding: 0.55rem 1rem;
+    border: none;
+    border-radius: 0.5rem;
+    font-size: 1rem !important;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px var(--shadow);
+}
+
+.upload-button:hover:not(:disabled) {
+    background-color: #60d8ba !important;
+    transform: translateY(-1px);
+}
+
+.upload-button:disabled {
+    background-color: var(--text-secondary);
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+/* Error Message */
+.error-message {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background-color: rgba(239, 68, 68, 0.1);
+    color: var(--error);
+    padding: 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--error);
+    margin: 1rem 0;
+}
+
+.error-message svg {
+    width: 1.25rem;
+    height: 1.25rem;
+    flex-shrink: 0;
+}
+
+/* Images Container */
+.images-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.image-box {
+    background-color: var(--bg-secondary);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    border: 1px solid var(--border);
+    box-shadow: 0 4px 6px var(--shadow);
+    transition: transform 0.2s ease;
+}
+
+.image-box:hover {
+    transform: translateY(-2px);
+}
+
+.image-box h2 {
+    margin-bottom: 1rem;
+    font-size: 1.25rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+.image-wrapper {
+    position: relative;
+    width: 100%;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    background-color: var(--bg-tertiary);
+}
+
+.image-wrapper img {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: contain;
+}
+
+/* Vector Results */
+.results-container {
+    background-color: var(--bg-secondary);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    border: 1px solid var(--border);
+    box-shadow: 0 4px 6px var(--shadow);
+}
+
+.results-container h2 {
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+    color: var(--text-primary);
+}
+
+.vector-groups {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.vector-group {
+    background-color: var(--bg-tertiary);
+    padding: 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border);
+}
+
+.vector-group h3 {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.vector-results {
+    display: grid;
+    gap: 0.5rem;
+}
+
+.result-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem;
+    background-color: var(--bg-secondary);
+    border-radius: 0.25rem;
+    font-size: 0.9rem;
+    transition: background-color 0.2s ease;
+}
+
+.result-item:hover {
+    background-color: var(--bg-tertiary);
+}
+
+.result-angle {
+    color: var(--accent);
+    font-weight: 500;
+}
+
+.result-value {
+    color: var(--text-secondary);
+}
+
+/* Loading States */
+.loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 0.5rem;
+    backdrop-filter: blur(2px);
+}
+
+.loading-spinner {
+    color: var(--accent);
+    width: 2rem;
+    height: 2rem;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.animate-spin {
+    animation: spin 1s linear infinite;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .app-container {
+        padding: 1rem;
+    }
+
+    .app-header h1 {
+        font-size: 2rem;
+    }
+
+    .app-header p {
+        font-size: 1rem;
+    }
+
+    .images-container {
+        grid-template-columns: 1fr;
+    }
+
+    .vector-groups {
+        grid-template-columns: 1fr;
+    }
+
+    .upload-button {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.image-box,
+.results-container {
+    animation: fadeIn 0.3s ease-out;
+}

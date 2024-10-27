@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import './App.css';
+import ComponentMounter from './components/ComponentMounter';
 
 function App() {
   const [currentModulo, setCurrentModulo] = useState(0);
-  
+
   const modulos = [
     {
       title: "Módulo Antena",
-      content: "Explicación del modelo de antenas utilizado y gráficos visuales."
+      content: "Explicación del modelo de antenas utilizado y gráficos visuales.",
+      componentName: "AntenaCalculator"
     },
     {
       title: "Módulo GIS",
@@ -115,6 +117,13 @@ function App() {
             <div className="modulo">
               <h2>{modulos[currentModulo].title}</h2>
               <p>{modulos[currentModulo].content}</p>
+              {
+                modulos[currentModulo] ?
+                  modulos[currentModulo].componentName ?
+                    <ComponentMounter name={modulos[currentModulo].componentName} />
+                    : null
+                  : null
+              }
             </div>
           </div>
           <button onClick={() => cambiarModulo(1)}>▶</button>
@@ -145,8 +154,8 @@ function App() {
           </div>
           <div className="social">
             {socialLinks.map((link, index) => (
-              <a 
-                key={index} 
+              <a
+                key={index}
                 href={link.url}
                 target="_blank"
                 rel="noopener noreferrer"
