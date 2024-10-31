@@ -66,7 +66,8 @@ const AntenaCalculator = () => {
 
     const processImage = async (imageData) => {
         try {
-            const response = await fetch('http://127.0.0.1:5000/process-image', {
+           // const response = await fetch('http://127.0.0.1:5000/process-image', {
+            const response = await fetch('https://scsc-5-mpfr-2-api.vercel.app/process-image', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
