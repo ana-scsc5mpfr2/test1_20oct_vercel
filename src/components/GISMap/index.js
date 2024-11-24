@@ -12,7 +12,7 @@ const GISMap = () => {
     const coordinatesTableRef = useRef(null);
 
     const status = useScript(
-        "https://cesium.com/downloads/cesiumjs/releases/1.71/Build/Cesium/Cesium.js",
+        "https://cesium.com/downloads/cesiumjs/releases/1.106/Build/Cesium/Cesium.js",
         {
             removeOnUnmount: true,
         }
@@ -21,67 +21,69 @@ const GISMap = () => {
     useEffect(() => {
         // Ensure Cesium script has been loaded
         if (status === "ready" && window.Cesium) {
-            console.log("Windwon", window.Cesium)
-
-
-            console.log(cesiumContainerRef)
-
-
             var Cesium = window.Cesium;
+            let blueBoxPosition;
+            let gridEntities = [];
+
             Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIyZTAxYzI1NC1kNzg2LTQ5MTMtOTA4OC1kZTAzOWI4MmQ3MWIiLCJpZCI6MTk5NjExLCJpYXQiOjE3MDk1ODI5MTN9.kOkKk6-5jk-hBgh8sgVJO6LoecybmC6K72fuP9sE0Bc';
+            Cesium.RequestScheduler.maximumRequests = 5; // Limit the number of simultaneous requests
+            Cesium.RequestScheduler.maximumRequestsPerServer = 3; // Limit the requests to a single server
 
-
-            const viewer = new Cesium.Viewer(cesiumContainerRef.current, {
+            const viewer = new Cesium.Viewer('cesiumContainer', {
                 terrainProvider: new Cesium.CesiumTerrainProvider({
                     url: Cesium.IonResource.fromAssetId(1),
                 }),
                 scene3DOnly: true,
                 selectionIndicator: false,
                 baseLayerPicker: false,
+                geocoder: false,
+                homeButton: false,
             });
 
-            viewer.scene.primitives.add(Cesium.createOsmBuildings({
-                style: new Cesium.Cesium3DTileStyle({
-                    defines: {
-                        distance: `distance(vec2(\${feature['cesium#longitude']}, \${feature['cesium#latitude']}), vec2(${centerLongitude}, ${centerLatitude}))`,
-                    },
-                    color: {
-                        conditions: [
-                            [`\${distance} < ${radius}`, "color('rgba(255, 0, 255, 0.5)')"],
-                            [true, "color('white')"],
-                        ],
-                    },
-                })
-            }));
+            viewer.camera.setView({
+                destination: Cesium.Cartesian3.fromDegrees(-99.1687, 19.4100, 3500), // Altitude: 10,000m
+                orientation: {
+                    heading: Cesium.Math.toRadians(0.0),  // North
+                    pitch: Cesium.Math.toRadians(-45.0), // Tilt downward
+                    roll: 0.0,
+                },
+            });
+
+            viewer.scene.globe.maximumScreenSpaceError = 10;
+            viewer.scene.globe.tileCacheSize = 50;
+
+            setTimeout(() => {
+                viewer.scene.primitives.add(Cesium.createOsmBuildings({
+                    style: new Cesium.Cesium3DTileStyle({
+                        defines: {
+                            distance: `distance(vec2(\${feature['cesium#longitude']}, \${feature['cesium#latitude']}), vec2(${centerLongitude}, ${centerLatitude}))`,
+                        },
+                        color: {
+                            conditions: [
+                                [`\${distance} < ${radius}`, "color('rgba(255, 0, 255, 0.5)')"],
+                                [true, "color('white')"],
+                            ],
+                        },
+                    })
+                }));
+            }, 2000);
+
 
             // Añadir cuadrado amarillo en el suelo
-            viewer.entities.add({
-                polygon: {
-                    hierarchy: Cesium.Cartesian3.fromDegreesArray([
-                        centerLongitude - radius, centerLatitude + radius,
-                        centerLongitude + radius, centerLatitude + radius,
-                        centerLongitude + radius, centerLatitude - radius,
-                        centerLongitude - radius, centerLatitude - radius
-                    ]),
-                    material: Cesium.Color.YELLOW.withAlpha(0.5)
-                }
-            });
-
-            let blueBoxPosition;
-            let gridEntities = [];
-
-            calculateTerrainHeight(Cesium.Cartographic.fromDegrees(centerLongitude, centerLatitude), function (terrainHeight) {
-                const boxHeight = 150;
-                blueBoxPosition = Cesium.Cartesian3.fromDegrees(centerLongitude, centerLatitude, terrainHeight + boxHeight);
+            setTimeout(() => {
                 viewer.entities.add({
-                    position: blueBoxPosition,
-                    box: {
-                        dimensions: new Cesium.Cartesian3(1, 1, 0.5),
-                        material: Cesium.Color.BLUE.withAlpha(0.5),
+                    polygon: {
+                        hierarchy: Cesium.Cartesian3.fromDegreesArray([
+                            centerLongitude - radius, centerLatitude + radius,
+                            centerLongitude + radius, centerLatitude + radius,
+                            centerLongitude + radius, centerLatitude - radius,
+                            centerLongitude - radius, centerLatitude - radius
+                        ]),
+                        material: Cesium.Color.YELLOW.withAlpha(0.5)
                     }
                 });
-                createBlueGrid(0.00009);
-            });
+            }, 2000)
+
 
             // Calcular la altura del terreno en una posición específica
             function calculateTerrainHeight(cartographicPosition, callback) {
@@ -90,6 +92,7 @@ const GISMap = () => {
                     callback(updatedPositions[0].height);
                 });
             }
+
 
             // Crear la malla y los puntos rojos con cálculo de distancias
             function createBlueGrid(spacing) {
@@ -105,49 +108,57 @@ const GISMap = () => {
                     }
                 }
 
-                getTerrainHeights(positions, function (updatedPositions) {
-                    updatedPositions.forEach((pos, i) => {
-                        const pointPosition3D = Cesium.Cartesian3.fromRadians(pos.longitude, pos.latitude, pos.height);
+                setTimeout(() => {
+                    getTerrainHeights(positions, function (updatedPositions) {
+                        updatedPositions.forEach((pos, i) => {
+                            const pointPosition3D = Cesium.Cartesian3.fromRadians(pos.longitude, pos.latitude, pos.height);
 
-                        const blueBoxPosition2D = Cesium.Cartesian3.fromDegrees(centerLongitude, centerLatitude, pos.height);
-                        const distance2D = Cesium.Cartesian3.distance(blueBoxPosition2D, pointPosition3D);
-                        const distance3D = Cesium.Cartesian3.distance(blueBoxPosition, pointPosition3D);
+                            // const blueBoxPosition2D = Cesium.Cartesian3.fromDegrees(centerLongitude, centerLatitude, pos.height);
+                            // const distance2D = Cesium.Cartesian3.distance(blueBoxPosition2D, pointPosition3D);
+                            // const distance3D = Cesium.Cartesian3.distance(blueBoxPosition, pointPosition3D);
 
-                        checkLineOfSight(blueBoxPosition, pointPosition3D, function (hasLineOfSight) {
-                            const point = viewer.entities.add({
-                                position: pointPosition3D,
-                                point: {
-                                    pixelSize: 10,
-                                    color: Cesium.Color.RED,
-                                    outlineColor: Cesium.Color.BLACK,
-                                    outlineWidth: 2
-                                }
-                            });
-                            gridEntities.push(point);
+                            setTimeout(() => {
+                                checkLineOfSight(blueBoxPosition, pointPosition3D, function (hasLineOfSight) {
+                                    const point = viewer.entities.add({
+                                        position: pointPosition3D,
+                                        point: {
+                                            pixelSize: 10,
+                                            color: Cesium.Color.RED,
+                                            outlineColor: Cesium.Color.BLACK,
+                                            outlineWidth: 2
+                                        }
+                                    });
+                                    gridEntities.push(point);
 
-                            const row = document.createElement("tr");
-                            row.innerHTML = `
-                                <td>${Cesium.Math.toDegrees(pos.latitude).toFixed(6)}</td>
-                                <td>${Cesium.Math.toDegrees(pos.longitude).toFixed(6)}</td>
-                                <td>${pos.height.toFixed(2)}</td>
-                                <td>${distance2D.toFixed(2)}</td>
-                                <td>${distance3D.toFixed(2)}</td>
-                                <td>${hasLineOfSight ? 1 : 0}</td>
-                            `;
-                            // coordinatesTableRef.current.appendChild(row);
-                            console.log(" coordinatesTableRef.current.appendChild(row);")
+                                    // const row = document.createElement("tr");
+                                    // row.innerHTML = `
+                                    //                     <td>${Cesium.Math.toDegrees(pos.latitude).toFixed(6)}</td>
+                                    //                     <td>${Cesium.Math.toDegrees(pos.longitude).toFixed(6)}</td>
+                                    //                     <td>${pos.height.toFixed(2)}</td>
+                                    //                     <td>${distance2D.toFixed(2)}</td>
+                                    //                     <td>${distance3D.toFixed(2)}</td>
+                                    //                     <td>${hasLineOfSight ? 1 : 0}</td>
+                                    //                 `;
+                                    // coordinatesTableRef.current.appendChild(row);
+                                    // console.log(" coordinatesTableRef.current.appendChild(row);")
 
-                            viewer.entities.add({
-                                polyline: {
-                                    positions: [blueBoxPosition, pointPosition3D],
-                                    width: 2,
-                                    material: hasLineOfSight ? Cesium.Color.GREEN.withAlpha(0.5) : Cesium.Color.RED.withAlpha(0.5)
-                                }
-                            });
+                                    setTimeout(() => {
+                                        viewer.entities.add({
+                                            polyline: {
+                                                positions: [blueBoxPosition, pointPosition3D],
+                                                width: 2,
+                                                material: hasLineOfSight ? Cesium.Color.GREEN.withAlpha(0.5) : Cesium.Color.RED.withAlpha(0.5)
+                                            }
+                                        });
+                                    }, 2000)
+                                });
+                            }, 1000)
                         });
                     });
-                });
+                }, 1000);
             }
+
+
 
             function checkLineOfSight(start, end, callback) {
                 const direction = Cesium.Cartesian3.normalize(Cesium.Cartesian3.subtract(end, start, new Cesium.Cartesian3()), new Cesium.Cartesian3());
@@ -181,13 +192,22 @@ const GISMap = () => {
                 });
             }
 
-            viewer.camera.flyTo({
-                destination: Cesium.Cartesian3.fromDegrees(centerLongitude, centerLatitude, 1000),
-                orientation: {
-                    heading: Cesium.Math.toRadians(360.0),
-                    pitch: Cesium.Math.toRadians(-10.0)
-                }
-            });
+            setTimeout(() => {
+                calculateTerrainHeight(Cesium.Cartographic.fromDegrees(centerLongitude, centerLatitude), function (terrainHeight) {
+                    const boxHeight = 150;
+                    blueBoxPosition = Cesium.Cartesian3.fromDegrees(centerLongitude, centerLatitude, terrainHeight + boxHeight);
+                    viewer.entities.add({
+                        position: blueBoxPosition,
+                        box: {
+                            dimensions: new Cesium.Cartesian3(1, 1, 0.5),
+                            material: Cesium.Color.BLUE.withAlpha(0.5),
+                        }
+                    });
+                    setTimeout(() => {
+                        createBlueGrid(0.00009);
+                    }, 1000)
+                });
+            }, 2500)
         }
     }, [status])
 
@@ -195,7 +215,7 @@ const GISMap = () => {
         <div className="app-container">
             <Helmet>
                 <link
-                    href="https://cesium.com/downloads/cesiumjs/releases/1.71/Build/Cesium/Widgets/widgets.css"
+                    href="https://cesium.com/downloads/cesiumjs/releases/1.106/Build/Cesium/Widgets/widgets.css"
                     rel="stylesheet"
                 />
             </Helmet>
