@@ -13,7 +13,8 @@ function App() {
     },
     {
       title: "Módulo GIS",
-      content: "Visualización del área de cobertura con mapas interactivos."
+      content: "Visualización del área de cobertura con mapas interactivos.",
+      componentName: "GISMap"
     },
     {
       title: "Módulo Análisis de Cobertura",
