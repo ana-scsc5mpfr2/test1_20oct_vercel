@@ -4,28 +4,43 @@ import ComponentMounter from './components/ComponentMounter';
 
 function App() {
   const [currentModulo, setCurrentModulo] = useState(0);
+  const [gainVector, setGainVector] = useState([]);
+  const [proccessedImages, setProccesedImages] = useState([]);
 
   const modulos = [
     {
       title: "Módulo Antena",
-      content: "Explicación del modelo de antenas utilizado y gráficos visuales.",
+      content: "Patrón de ganancia de antena para la obtención de las perdidas por apuntamiento",//"Explicación del modelo de antenas utilizado y gráficos visuales.",
       componentName: "AntenaCalculator"
     },
     {
-      title: "Módulo GIS",
-      content: "Visualización del área de cobertura con mapas interactivos.",
-      componentName: "GISMap"
+      title: "Módulo Parámetros Entrada",
+      content: "Visualización y extracción de la información geográfica del área de cobertura con mapas interactivo y configuración de parámetro de la red.",
+      componentName: "NetworkSimultionForm"
     },
     {
       title: "Módulo Análisis de Cobertura",
-      content: "Resultados de simulación visualizados con mapas de calor."
+      content: "Resultados generales y simulación de cobertura con mapa de calor.",
+      componentName: "GISMap"
     }
   ];
 
   const features = [
     {
       title: "Modelos de Propagación",
-      description: "Estudio avanzado de los modelos de propagación en redes 5G."
+      description: (
+        <>
+          Implementación estándar de los modelos {' '}
+          <a
+            href="https://www.etsi.org/deliver/etsi_tr/138900_138999/138901/16.01.00_60/tr_138901v160100p.pdf"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            3GPP TR 38.901
+          </a>
+          {' '}para el escenario UMi (Urban micro) y UMa (Urban macro) de propagación en redes 5G en la banda RF2.
+        </>
+      )
     },
     {
       title: "Mapeo GIS",
@@ -33,7 +48,7 @@ function App() {
     },
     {
       title: "Análisis de Cobertura",
-      description: "Analiza la efectividad y rendimiento de la red en diversas condiciones."
+      description: "Analiza la efectividad y rendimiento de la red 5G en la banda RF2 en diversas condiciones."
     }
   ];
 
@@ -43,14 +58,14 @@ function App() {
       role: "Creadora",
       email: "aramirezh1606@alumno.ipn.mx",
       description: "En proceso de obtener el título de Ingeniera en Telemática por la UPIITA-IPN, México, en 2024. Entre sus intereses está la evaluación del desempeño y la planeación de redes celulares, antenas, procesamiento de imágenes y programación.",
-      image: "/api/placeholder/150/150"
+      image: require("./images/ana.jpg")
     },
     {
       name: "Noé Torres-Cruz",
       role: "Asesor",
       email: "ntorresc@ipn.mx",
       description: "Obtuvo su título de Ingeniero Electrónico en el Instituto Tecnológico de Oaxaca, México, en 2002. Posteriormente, obtuvo el grado de Maestro en Ciencias en Ingeniería Eléctrica por el CINVESTAV-IPN, México, en 2006 y el de Doctor en Ciencias de la Computación por el CIC, IPN, México, en 2019. Actualmente, es profesor en la Unidad Profesional Interdisciplinaria en Ingeniería y Tecnologías Avanzadas del IPN (UPIITA-IPN, México). Sus intereses de investigación incluyen el análisis de servicios de Video bajo Demanda (VoD) y la gestión de recursos en redes de Quinta Generación (5G).",
-      image: "/api/placeholder/150/150"
+      image: require("./images/noe.png")
     }
   ];
 
@@ -97,7 +112,7 @@ function App() {
       <section id="home" className="hero">
         <div className="hero-content">
           <h1>Simulador de Cobertura de Sistemas Celulares 5G</h1>
-          <p>Explora la cobertura y el rendimiento de redes 5G mediante modelos de propagación de vanguardia.</p>
+          <p>Explora la cobertura y el rendimiento de redes 5G para la banda RF2 mediante los modelos de propagación Umi y Uma.</p>
           <a href="#modelos" className="btn-cta">Empezar Simulación</a>
         </div>
       </section>
@@ -113,7 +128,8 @@ function App() {
 
       <section id="modelos" className="modelos">
         <div className="modelos-nav">
-          <button onClick={() => cambiarModulo(-1)}>◀</button>
+          <div></div>
+          {/* <button onClick={() => cambiarModulo(-1)}>◀</button> */}
           <div className="modulo-content">
             <div className="modulo">
               <h2>{modulos[currentModulo].title}</h2>
@@ -121,7 +137,7 @@ function App() {
               {
                 modulos[currentModulo] ?
                   modulos[currentModulo].componentName ?
-                    <ComponentMounter name={modulos[currentModulo].componentName} />
+                    <ComponentMounter setGainVector={setGainVector} gainVector={gainVector} name={modulos[currentModulo].componentName} setProccesedImages={setProccesedImages} proccessedImages={proccessedImages} />
                     : null
                   : null
               }

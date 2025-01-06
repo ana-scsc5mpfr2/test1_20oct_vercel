@@ -69,7 +69,27 @@ body {
 .upload-section {
     display: flex;
     justify-content: center;
+    flex-direction: column;
     margin-bottom: 1rem;
+}
+
+
+.styled-input {
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 50%;
+    box-sizing: border-box;
+}
+
+.space-y-2 {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    margin-right: 2%;
 }
 
 .hidden {
@@ -317,4 +337,28 @@ body {
 .image-box,
 .results-container {
     animation: fadeIn 0.3s ease-out;
+}
+
+
+.default-images-title-text {
+    margin-top: 44px;
+    margin-bottom: 44px;
+    color: var(--text-primary);
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+
+.default-image-button-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+
+.default-image-button {
+    width: 100%;
+    justify-content: center;
 }
