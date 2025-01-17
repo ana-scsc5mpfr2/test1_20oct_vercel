@@ -42,6 +42,7 @@ const AntenaCalculator = ({ gainVector, setGainVector, setProccesedImages, procc
                 reader.onerror = (e) => reject(new Error('Error leyendo la imagen'));
                 reader.readAsDataURL(file);
             });
+            console.log('Base64 Image:', base64Image);
 
             // Validate image dimensions
             const img = new Image();

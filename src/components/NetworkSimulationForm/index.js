@@ -19,7 +19,7 @@ const NetworkSimulationForm = ({ onStartSimulation, disabled = false, simulation
   const [formData, setFormData] = useState({
     centerLongitude: -99.16611,
     centerLatitude: 19.42645,
-    studyAreaSize: 2000, // Default 1km
+    studyAreaSize: 500, // Default 1km
     antena1: {
       longitude: -99.16611,
       latitude: 19.42645,
@@ -37,7 +37,7 @@ const NetworkSimulationForm = ({ onStartSimulation, disabled = false, simulation
     modelType: "Umi",
     h_bs: 10,
     gridSpacing: 20,
-    gridSize: 11,
+    gridSize: 4, //11,
   });
 
   const offsetsRef = useRef({
@@ -458,10 +458,17 @@ const NetworkSimulationForm = ({ onStartSimulation, disabled = false, simulation
     }
   }, [status, activeUpdateMode]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    onStartSimulation(formData);
+    
+    try {
+      await onStartSimulation(formData);
+    } catch (error) {
+      console.error('Error en la simulación:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleChange = (e) => {

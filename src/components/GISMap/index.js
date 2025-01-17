@@ -94,6 +94,7 @@ const getAnglefromVector = (angle, indexOfVector, reorganizedGainVector) => {
     return lowerValue + (upperValue - lowerValue) * rangeFraction;
 };
 
+
 const GISMap = ({ gainVector, params, proccessedImages }) => {
     const cesiumContainerRef = useRef(null);
     const coordinatesTableRef = useRef(null);
@@ -563,6 +564,46 @@ const GISMap = ({ gainVector, params, proccessedImages }) => {
             });
         }
 
+        function showWarningMessage(mapContainerId) {
+        // Encuentra y reemplaza la función WarningMessage
+
+            // Check if the warning message already exists
+            if (!document.getElementById('simulation-warning')) {
+                // Create the warning message element
+                const warningDiv = document.createElement('div');
+                warningDiv.id = 'simulation-warning';
+                warningDiv.style.position = 'absolute';
+                warningDiv.style.top = '10px';
+                warningDiv.style.left = '50%';
+                warningDiv.style.transform = 'translateX(-50%)';
+                warningDiv.style.backgroundColor = 'rgba(255, 81, 0, 0.9)';
+                warningDiv.style.padding = '10px';
+                warningDiv.style.border = '1px solid #ccc';
+                warningDiv.style.borderRadius = '5px';
+                warningDiv.style.zIndex = '1000';
+                warningDiv.style.fontSize = '14px';
+                warningDiv.style.fontWeight = 'bold';
+                warningDiv.style.textAlign = 'center';
+                warningDiv.textContent = 'Permita que la simulación se ejecute sin mover la cámara (vista); de lo contrario, los resultados podrían verse afectados.';
+
+                // Append the warning message to the map container
+                const mapContainer = document.getElementById('cesiumContainer'); // Cambiado de 'map-container' a 'cesiumContainer'
+                if (mapContainer) {
+                    mapContainer.style.position = 'relative'; // Ensure the container has relative positioning
+                    mapContainer.appendChild(warningDiv);
+                } else {
+                    console.error(`Map container with ID "cesiumContainer" not found.`);
+                }
+            }
+        }
+        
+        function removeWarningMessage() {
+            const warningDiv = document.getElementById('simulation-warning');
+            if (warningDiv) {
+                warningDiv.remove();
+            }
+        }
+
         async function processAllQuadrants() {
             for (let index = 0; index < quadrants.length; index++) {
                 const quadrant = quadrants[index]; // Obtén el cuadrante actual
@@ -585,7 +626,8 @@ const GISMap = ({ gainVector, params, proccessedImages }) => {
                 const spacingInMeters = params.gridSpacing;; // Define el espaciado en metros para el heatmap
                 // Crea el heatmap para el cuadrante actual
                 createHeatmapForQuadrant(quadrant, spacingInMeters / (111320 * Math.cos(Cesium.Math.toRadians(centerLatitude))), "Umi");
-
+                showWarningMessage('cesiumContainer');//(cesiumContainerRef); // Muestra la advertencia
+                
                 // console.log(`Heatmap creado para cuadrante ${index + 1}`); // Registro de creación de heatmap
 
                 // Espera adicional después de crear el heatmap (si es necesario)
@@ -593,6 +635,7 @@ const GISMap = ({ gainVector, params, proccessedImages }) => {
             }
 
             console.log('Procesamiento de todos los cuadrantes completado'); // Registro de finalización del procesamiento
+            removeWarningMessage(); // Quita la advertencia
 
             // Registra el tiempo total de ejecución después de procesar todos los cuadrantes
             const totalExecutionTime = 30 * 1000 * quadrants.length + 15 * 1000;
@@ -600,6 +643,317 @@ const GISMap = ({ gainVector, params, proccessedImages }) => {
         }
 
 
+        function visualizeHeatmap(positions, values) {
+            // Eliminar leyenda existente si hay alguna
+            const existingLegend = document.querySelector('.heatmap-legend');
+            if (existingLegend) {
+                existingLegend.remove();
+            }
+        
+            // Crear nueva capa de puntos para el heatmap
+            const heatmapLayer = viewer.scene.primitives.add(new Cesium.PointPrimitiveCollection());
+            const minVal = minGlobalVal;
+            const maxVal = maxGlobalVal;
+        
+            // Contadores para estadísticas
+            let Ns = 0; // Número de puntos dentro de la sensibilidad del receptor
+            let N = 0;  // Número total de puntos válidos
+        
+            // Configuración para el PDF
+            const binCount = 50;
+            const binWidth = (maxVal - minVal) / binCount;
+            const bins = new Array(binCount).fill(0);
+        
+            // Filtrar valores válidos
+            const validValues = values.filter(v => v !== null && v >= sensibilidad_rx);
+            N = validValues.length;
+            Ns = validValues.filter(v => v >= sensibilidad_rx).length;
+        
+            // Calcular histograma
+            validValues.forEach(value => {
+                const binIndex = Math.min(Math.floor((value - minVal) / binWidth), binCount - 1);
+                bins[binIndex]++;
+            });
+        
+            // Calcular PDF normalizada
+            // El área bajo la curva debe ser 1
+            const totalArea = bins.reduce((sum, count) => sum + count * binWidth, 0);
+            const normalizedBins = bins.map(count => count / (totalArea));
+        
+            // Procesar cada punto del mapa
+            positions.forEach((position, i) => {
+                const value = values[i];
+                let color;
+        
+                if (value === null) {
+                    color = Cesium.Color.WHITE;
+                } else {
+                    if (value >= sensibilidad_rx) {
+                        const normalizedValue = (value - minVal) / (maxVal - minVal);
+                        const hue = (1 - normalizedValue) * 0.28;
+                        color = Cesium.Color.fromHsl(hue, 1, 0.5, 1);
+                    } else {
+                        color = Cesium.Color.GRAY;
+                    }
+                }
+        
+                heatmapLayer.add({
+                    position,
+                    color,
+                    pixelSize: 16,
+                });
+            });
+        
+            // Configuración del gráfico SVG
+            const svgWidth = 200;
+            const svgHeight = 125;
+            const graphMargin = { top: 5, right: 15, bottom:40, left: 55 };
+            const graphWidth = svgWidth - graphMargin.left - graphMargin.right;
+            const graphHeight = svgHeight - graphMargin.top - graphMargin.bottom;
+        
+            // Encontrar el valor máximo de la PDF normalizada para escalar el gráfico
+            const maxPDFValue = Math.max(...normalizedBins);
+        
+            // Generar puntos para la curva PDF
+            const points = normalizedBins.map((value, index) => {
+                const x = graphMargin.left + (index / (binCount - 1)) * graphWidth;
+                const y = graphMargin.top + graphHeight - (value / maxPDFValue * graphHeight);
+                return `${x},${y}`;
+            }).join(' ');
+        
+            // Calcular marcas del eje X (valores de potencia)
+            const xAxisTicks = Array.from({ length: 5 }, (_, i) => {
+                const value = minVal + (i * (maxVal - minVal) / 4);
+                const x = graphMargin.left + (i * graphWidth / 4);
+                return { value, x };
+            });
+        
+            // Calcular marcas del eje Y (valores de densidad de probabilidad)
+            const yAxisTicks = Array.from({ length: 5 }, (_, i) => {
+                const value = (maxPDFValue * (4 - i) / 4);
+                const y = graphMargin.top + (i * graphHeight / 4);
+                return { value, y };
+            });
+        
+            // Generar contenido HTML para la leyenda de potencia
+            const powerLegendContainer = document.createElement("div");
+            powerLegendContainer.className = 'heatmap-power-legend';
+            powerLegendContainer.style.cssText = `
+                position: absolute;
+                top: 20px;
+                right: 10px;
+                background: rgba(42, 42, 42, 0.9);
+                padding: 5px;
+                border-radius: 5px;
+                color: white;
+                z-index: 1000;
+                min-width: 100px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+                cursor: move;
+            `;
+        
+            // Generar paradas de gradiente para la escala de colores
+            const gradientStops = [];
+            for (let i = 0; i <= 1; i += 0.1) {
+                const hue = i * 0.28;
+                gradientStops.push(`hsl(${hue * 360}, 100%, 50%) ${i * 100}%`);
+            }
+        
+            // Generar contenido HTML para la leyenda PDF
+            const pdfLegendContainer = document.createElement("div");
+            pdfLegendContainer.className = 'heatmap-pdf-legend';
+            pdfLegendContainer.style.cssText = `
+                position: absolute;
+                top: 10px;
+                left: 25px;
+                background: rgba(42, 42, 42, 0.9);
+                padding: 15px;
+                border-radius: 5px;
+                color: white;
+                z-index: 1000;
+                min-width: 200px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+                cursor: move;
+            `;
+        
+            // Contenido de la leyenda de potencia
+            powerLegendContainer.innerHTML = `
+                <div style="font-weight: bold; margin-bottom: 10px; padding: 5px; background: rgba(0,0,0,0.2); cursor: move;" id="powerLegendHeader">
+                    ▼ Potencia
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="background: linear-gradient(to bottom, ${gradientStops.join(', ')}); 
+                                height: 200px; width: 20px; border-radius: 3px;"></div>
+                    <div style="display: flex; flex-direction: column; justify-content: space-between; height: 200px;">
+                        <span>${maxVal.toFixed(2)} dBm</span>
+                        <span>${((maxVal + minVal) / 2).toFixed(2)} dBm</span>
+                        <span>${minVal.toFixed(2)} dBm</span>
+                    </div>
+                </div>
+                <div style="margin-top: 10px;">
+                    <div style="display: flex; align-items: center; margin: 5px 0;">
+                        <div style="width: 15px; height: 15px; background: white; margin-right: 8px; border: 1px solid #666;"></div>
+                        <span style="font-size: 12px;">Edificios</span>
+                    </div>
+                    <div style="display: flex; align-items: center; margin: 5px 0;">
+                        <div style="width: 15px; height: 15px; background: gray; margin-right: 8px; border: 1px solid #666;"></div>
+                        <span style="font-size: 12px;">Bajo Sensibilidad</span>
+                    </div>
+                </div>
+            `;
+        
+            // Contenido de la leyenda PDF
+            pdfLegendContainer.innerHTML = `
+                <div style="font-weight: bold; margin-bottom: 6px; padding: 5px; background: rgba(0,0,0,0.2); cursor: move;" id="pdfLegendHeader">
+                    ▼ Distribución de Potencia
+                </div>
+                <div style="margin-top: 15px;">
+                    <svg width="${svgWidth}" height="${svgHeight}" style="background: rgba(0,0,0,0.1); border-radius: 3px;">
+                        <!-- Líneas de cuadrícula -->
+                        ${xAxisTicks.map(tick => `
+                            <line 
+                                x1="${tick.x}" 
+                                y1="${graphMargin.top}" 
+                                x2="${tick.x}" 
+                                y2="${graphHeight + graphMargin.top}" 
+                                stroke="rgba(255,255,255,0.1)" 
+                                stroke-dasharray="2,2"
+                            />
+                        `).join('')}
+                        ${yAxisTicks.map(tick => `
+                            <line 
+                                x1="${graphMargin.left}" 
+                                y1="${tick.y}" 
+                                x2="${graphWidth + graphMargin.left}" 
+                                y2="${tick.y}" 
+                                stroke="rgba(255,255,255,0.1)" 
+                                stroke-dasharray="2,2"
+                            />
+                        `).join('')}
+                        
+                        <!-- Curva PDF -->
+                        <polyline
+                            points="${points}"
+                            fill="none"
+                            stroke="white"
+                            stroke-width="1.5"
+                        />
+                        
+                        <!-- Ejes -->
+                        <line 
+                            x1="${graphMargin.left}" 
+                            y1="${graphHeight + graphMargin.top}" 
+                            x2="${graphWidth + graphMargin.left}" 
+                            y2="${graphHeight + graphMargin.top}" 
+                            stroke="white" 
+                        />
+                        <line 
+                            x1="${graphMargin.left}" 
+                            y1="${graphMargin.top}" 
+                            x2="${graphMargin.left}" 
+                            y2="${graphHeight + graphMargin.top}" 
+                            stroke="white" 
+                        />
+                        
+                        <!-- Etiquetas eje X -->
+                        ${xAxisTicks.map(tick => `
+                            <text 
+                                x="${tick.x}" 
+                                y="${graphHeight + graphMargin.top + 20}" 
+                                fill="white" 
+                                text-anchor="middle" 
+                                font-size="10"
+                            >${tick.value.toFixed(1)}</text>
+                        `).join('')}
+                        <text 
+                            x="${svgWidth/2}" 
+                            y="${svgHeight - 5}" 
+                            fill="white" 
+                            text-anchor="middle" 
+                            font-size="10"
+                        >Potencia (dBm)</text>
+                        
+                        <!-- Etiquetas eje Y -->
+                        ${yAxisTicks.map(tick => `
+                            <text 
+                                x="${graphMargin.left - 5}" 
+                                y="${tick.y}" 
+                                fill="white" 
+                                text-anchor="end" 
+                                alignment-baseline="middle" 
+                                font-size="10"
+                            >${(tick.value).toFixed(4)}</text>
+                        `).join('')}
+                        <text 
+                            x="${10}" 
+                            y="${svgHeight/2}" 
+                            fill="white" 
+                            text-anchor="middle" 
+                            transform="rotate(-90, 10, ${svgHeight/2})" 
+                            font-size="10"
+                        >Densidad de Probabilidad</text>
+                    </svg>
+                </div>
+            `;
+        
+            // Función para hacer las leyendas arrastrables
+            function makeDraggable(element, headerSelector) {
+                let isDragging = false;
+                let currentX;
+                let currentY;
+                let initialX;
+                let initialY;
+                let xOffset = 0;
+                let yOffset = 0;
+        
+                const header = element.querySelector(headerSelector);
+        
+                const dragStart = (e) => {
+                    if (e.type === "mousedown") {
+                        initialX = e.clientX - xOffset;
+                        initialY = e.clientY - yOffset;
+                        isDragging = true;
+                    }
+                };
+        
+                const dragEnd = () => {
+                    isDragging = false;
+                };
+        
+                const drag = (e) => {
+                    if (isDragging) {
+                        e.preventDefault();
+                        currentX = e.clientX - initialX;
+                        currentY = e.clientY - initialY;
+        
+                        xOffset = currentX;
+                        yOffset = currentY;
+        
+                        element.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
+                    }
+                };
+        
+                header.addEventListener('mousedown', dragStart);
+                document.addEventListener('mousemove', drag);
+                document.addEventListener('mouseup', dragEnd);
+            }
+        
+            // Agregar leyendas al contenedor
+            const cesiumContainer = document.getElementById('cesiumContainer');
+            if (cesiumContainer) {
+                cesiumContainer.style.position = 'relative';
+                cesiumContainer.appendChild(powerLegendContainer);
+                cesiumContainer.appendChild(pdfLegendContainer);
+        
+                makeDraggable(powerLegendContainer, '#powerLegendHeader');
+                makeDraggable(pdfLegendContainer, '#pdfLegendHeader');
+            }
+        
+            // Calcular y establecer el porcentaje de puntos dentro de la escala
+            const percentageInScale = (Ns / N) * 100;
+            setPrecentageInScale(percentageInScale);
+        }
+/*
         function visualizeHeatmap(positions, values) {
             const heatmapLayer = viewer.scene.primitives.add(new Cesium.PointPrimitiveCollection());
             const minVal = minGlobalVal;
@@ -618,11 +972,11 @@ const GISMap = ({ gainVector, params, proccessedImages }) => {
                     N++; // Incrementar el contador total excluyendo los valores nulos (blancos)
                     if (value >= sensibilidad_rx) {
                         const normalizedValue = (value - minVal) / (maxVal - minVal);
-                        const hue = (normalizedValue - 1) * 0.25; // Ajuste para calcular el tono (hue) correctamente
+                        const hue = ( 1 - normalizedValue) * 0.33;//28;//(normalizedValue - 1) * 0.25; // Ajuste para calcular el tono (hue) correctamente
                         color = Cesium.Color.fromHsl(hue, 1, 0.5, 1);
                         Ns++; // Incrementar el contador para los valores dentro de la escala
                     } else {
-                        color = Cesium.Color.BLUE; // Azul marino NAVY
+                        color = Cesium.Color.GRAY; // Azul marino NAVY DARKBLUE
                     }
                 }
 
@@ -639,7 +993,7 @@ const GISMap = ({ gainVector, params, proccessedImages }) => {
             // console.log(`Porcentaje de puntos en la escala: ${percentageInScale.toFixed(2)}%`);
         }
 
-
+*/
 
         processAllQuadrants().then(() => {
 
@@ -766,7 +1120,9 @@ const GISMap = ({ gainVector, params, proccessedImages }) => {
             <NetworkSimulationForm disabled={true} simulationParams={params} />
 
             <div className="map-container">
-                <div id="cesiumContainer" className="fullSize" ref={cesiumContainerRef} />
+
+            
+            <div id="cesiumContainer" className="fullSize" ref={cesiumContainerRef} />
                 <div className={`table-container ${isTableExpanded ? 'expanded' : ''}`}>
 
                     <table className="coordinates-table" ref={coordinatesTableRef}>
@@ -806,8 +1162,8 @@ const GISMap = ({ gainVector, params, proccessedImages }) => {
                 <div className="space-y-2">
 
                         <li>Los puntos blancos son edificios (no se calcula nada, el modelo es para exteriores).</li>
-                        <li>Los puntos azules representan la potencia de recepción menor a la sensibilidad del receptor.</li>
-                        <li>Los puntos en la escala de rojo, morado y rosa representan el desvanecimiento de la señal.</li>
+                        <li>Los puntos grices representan la potencia de recepción menor a la sensibilidad del receptor.</li>
+                        <li>Los puntos en la escala de rojo que degrada hacía el verde representan el desvanecimiento de la señal.</li>
                     
                 </div>
 
