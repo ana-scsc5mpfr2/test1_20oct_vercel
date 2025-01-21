@@ -3,6 +3,13 @@ import { ArrowUpRightFromSquareIcon, Loader2 } from 'lucide-react';
 import { useScript } from "@uidotdev/usehooks";
 import { Helmet } from "react-helmet";
 import './index.css';
+const calcularLadoDelCuadrado = (area) => {
+  if (area <= 0) {
+      console.error("El área debe ser mayor que 0.");
+      return null;
+  }
+  return Math.sqrt(area); // Calcula el lado
+};
 
 const NetworkSimulationForm = ({ onStartSimulation, disabled = false, simulationParams }) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -17,19 +24,19 @@ const NetworkSimulationForm = ({ onStartSimulation, disabled = false, simulation
     boundary: null
   });
   const [formData, setFormData] = useState({
-    centerLongitude: -99.16611,
-    centerLatitude: 19.42645,
+    centerLongitude: -99.167653,
+    centerLatitude: 19.426979,
     studyAreaSize: 500, // Default 1km
     antena1: {
-      longitude: -99.16611,
-      latitude: 19.42645,
+      longitude: -99.168996,
+      latitude: 19.426468,
       frequency: 28,
       power: 30,
     },
     antena2: {
-      longitude: -99.167665,
-      latitude: 19.427025,
-      frequency: 38,
+      longitude:-99.166626,
+      latitude: 19.4275,
+      frequency: 28,
       power: 30,
     },
     sensitivity: -110,
@@ -110,8 +117,20 @@ const NetworkSimulationForm = ({ onStartSimulation, disabled = false, simulation
  // Modify the updateBoundary function to check antenna positions
  const updateBoundary = (center) => {
   if (!viewerRef.current) return;
+  const area = formData.studyAreaSize; // Área en m², suponiendo que params.studyAreaSize ya contiene el área
+  const ladoEnm = calcularLadoDelCuadrado(area); // Lado del cuadrado en kilómetros
 
-  const radius = (formData.studyAreaSize / 2) / 111319.9;
+  if (!ladoEnm) {
+      console.error("No se pudo calcular el lado del cuadrado.");
+      return;
+  }
+
+  //console.log(`Lado del cuadrado: ${ladoEnm} m`);
+
+  // Convertir el lado del cuadrado en un radio en grados geográficos
+  var radius = (ladoEnm ) / 11131.99 //  Donde 11131.99 es la aproximación de m por grado
+  
+  ////////const radius = (formData.studyAreaSize / 2) / 111319.9;
 
   boundaryLimitsRef.current = {
     minLon: center.lon - radius,
@@ -654,7 +673,7 @@ const NetworkSimulationForm = ({ onStartSimulation, disabled = false, simulation
 
        {/* In the General Settings section, add this new field: */}
        <div className="space-y-2">
-            <label className="block text-sm text-gray-300">Área de estudio (entre 500m y 2000m) </label>
+            <label className="block text-sm text-gray-300">Área de estudio (entre 500m^2 y 2000m^2) </label>
             <input
               type="number"
               name="studyAreaSize"

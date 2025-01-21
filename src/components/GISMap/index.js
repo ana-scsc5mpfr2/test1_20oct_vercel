@@ -94,6 +94,13 @@ const getAnglefromVector = (angle, indexOfVector, reorganizedGainVector) => {
     return lowerValue + (upperValue - lowerValue) * rangeFraction;
 };
 
+const calcularLadoDelCuadrado = (area) => {
+    if (area <= 0) {
+        console.error("El área debe ser mayor que 0.");
+        return null;
+    }
+    return Math.sqrt(area); // Calcula el lado
+  };
 
 const GISMap = ({ gainVector, params, proccessedImages }) => {
     const cesiumContainerRef = useRef(null);
@@ -137,10 +144,21 @@ const GISMap = ({ gainVector, params, proccessedImages }) => {
        // function reorganizeGainVector(originalGainVector) {
             // Crear un nuevo array para almacenar los valores reorganizados
    
-        
+            const area = params.studyAreaSize; // Área en m², suponiendo que params.studyAreaSize ya contiene el área
+            const ladoEnm = calcularLadoDelCuadrado(area); // Lado del cuadrado en kilómetros
+          
+            if (!ladoEnm) {
+                console.error("No se pudo calcular el lado del cuadrado.");
+                return;
+            }
+          
+            //console.log(`Lado del cuadrado: ${ladoEnm} m`);
+          
+            // Convertir el lado del cuadrado en un radio en grados geográficos
+            var radius = (ladoEnm ) / 11131.99 
 
 
-        var radius =   (params.studyAreaSize / 2) / 111319.9;//0.007;
+       // var radius =   (params.studyAreaSize / 2) / 111319.9;//0.007;
 
         var c = 300000000;
         var fc = params.antena1.frequency;
@@ -374,9 +392,9 @@ const GISMap = ({ gainVector, params, proccessedImages }) => {
 
             // Determinar valores umaLOS y umaNLOS
             var umaLOS;
-            if (distance2D >= 10 && distance2D <= d_BP) {
+            if (distance2D >= 1 && distance2D <= d_BP) {
                 umaLOS = PL_1_uma_LOS;
-            } else if (distance2D > d_BP && distance2D <= 5000) {
+            } else if (distance2D > d_BP && distance2D ) {//distance2D > d_BP && distance2D <= 5000
                 umaLOS = PL_2_uma_LOS;
             } else {
                 throw new Error("distance2D fuera de rango válido (10 <= d2D <= 5000).");
@@ -510,9 +528,9 @@ const GISMap = ({ gainVector, params, proccessedImages }) => {
                             angle = calculateAngle(antenaCartographicPosition, position);
                             G_tx = getAnglefromVector(angle, 0, reorganizedGainVector) + gtxMax1;
                             //G_tx =   getAnglefromVector(angle, 0) + gtxMax1 //Number(gtxMax1.toFixed(6));
-                            console.log("G_tx", G_tx)
+                           // console.log("G_tx", G_tx)
                             Pot = P_rx_1 + G_tx;
-                            console.log("Pot", Pot)
+                            //console.log("Pot", Pot)
                         } else {
 
                             minCalculatedValue = calculatedValue_2;
@@ -521,9 +539,9 @@ const GISMap = ({ gainVector, params, proccessedImages }) => {
                             angle = calculateAngle(antenaCartographicPosition_2, position);
                             G_tx = getAnglefromVector(angle, 1, reorganizedGainVector) + gtxMax2;
                             //G_tx = getAnglefromVector(angle, 1) + gtxMax2 //getAnglefromVector(angle, 1) //gtxMax2 ++ gainVector[1].gtxMax 
-                            console.log("G_tx", G_tx)
+                          //  console.log("G_tx", G_tx)
                             Pot = P_rx_2 + G_tx;
-                            console.log("Pot", Pot)
+                           // console.log("Pot", Pot)
                         }
 
                         if (Pot !== null && Pot !== NaN) {
@@ -665,7 +683,7 @@ const GISMap = ({ gainVector, params, proccessedImages }) => {
             const bins = new Array(binCount).fill(0);
         
             // Filtrar valores válidos
-            const validValues = values.filter(v => v !== null && v >= sensibilidad_rx);
+            const validValues = values.filter(v => v !== null );//v => v !== null && v >= sensibilidad_rx
             N = validValues.length;
             Ns = validValues.filter(v => v >= sensibilidad_rx).length;
         
@@ -680,6 +698,9 @@ const GISMap = ({ gainVector, params, proccessedImages }) => {
             const totalArea = bins.reduce((sum, count) => sum + count * binWidth, 0);
             const normalizedBins = bins.map(count => count / (totalArea));
         
+            // Mostrar en la consola
+console.log('Bins:', bins);
+console.log('Normalized PDF:', normalizedBins);
             // Procesar cada punto del mapa
             positions.forEach((position, i) => {
                 const value = values[i];
@@ -734,7 +755,7 @@ const GISMap = ({ gainVector, params, proccessedImages }) => {
                 const y = graphMargin.top + (i * graphHeight / 4);
                 return { value, y };
             });
-        
+        console.log("xAxisTicks", xAxisTicks)
             // Generar contenido HTML para la leyenda de potencia
             const powerLegendContainer = document.createElement("div");
             powerLegendContainer.className = 'heatmap-power-legend';
@@ -1037,7 +1058,7 @@ const GISMap = ({ gainVector, params, proccessedImages }) => {
 
         return (
             <div className="results-container">
-                <h2>Vector Analysis Results {index + 1}</h2>
+                <h2>Resultado del análisis  {index + 1}</h2>
                 {
                     vectorAnalysisResultsVisible[index] ?
                         <div className="vector-groups">
@@ -1089,13 +1110,13 @@ const GISMap = ({ gainVector, params, proccessedImages }) => {
                         <div className='images-container-container' key={`image-${index}`}>
                             <div className="images-container">
                                 <div className="image-box">
-                                    <h2>Original Image</h2>
+                                    <h2>Imagen Original </h2>
                                     <div className="image-wrapper">
                                         <img src={image.originalImage} alt="Original" />
                                     </div>
                                 </div>
                                 <div className="image-box">
-                                    <h2>Processed Image</h2>
+                                    <h2>Imagen Procesada</h2>
                                     <div className="image-wrapper">
                                         <img src={image.proccessedImage} alt="Procesada" />
                                     </div>

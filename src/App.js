@@ -181,7 +181,7 @@ function App() {
               </a>
             ))}
           </div>
-          <p>© 2024 SCSC5MPFR2. Todos los derechos reservados.</p>
+          <p>© 2025 SCSC5MPFR2. Todos los derechos reservados.</p>
         </div>
       </footer>
     </div>

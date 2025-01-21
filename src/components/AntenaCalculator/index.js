@@ -194,7 +194,8 @@ const AntenaCalculator = ({ gainVector, setGainVector, setProccesedImages, procc
         <div className="app-container">
             <header className="app-header">
                 <h1>Herramienta de análisis de imágenes</h1>
-                <p>Carga una imagen (max 2024x2024px)del patrón normalizado de ganancia de la antena en el eje transversal xy para procesar sus pérdidas</p>
+                <p>Carga una imagen (max 2024x2024px)del patrón normalizado de ganancia de la antena en el eje transversal xy para procesar sus pérdidas.</p>
+                <p>La imagén debe de tener solo un patrón de ganancia normalizado, representado en azul con grosor prominente, continúa, sin cambios demasiado bruscos,sin títulos o espacios entre los ejes de las coordenadas polares; el ángulo cero debe de apuntar hacía el este y ángulo de 90 al norte.</p>
             </header>
 
             <main className="app-main">
