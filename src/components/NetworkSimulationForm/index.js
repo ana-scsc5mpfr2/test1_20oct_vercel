@@ -80,7 +80,7 @@ const NetworkSimulationForm = ({ onStartSimulation, disabled = false, simulation
   }, [simulationParams, formData]);
 
   const status = useScript(
-    "https://cesium.com/downloads/cesiumjs/releases/1.71/Build/Cesium/Cesium.js"
+    "https://cesium.com/downloads/cesiumjs/releases/1.106/Build/Cesium/Cesium.js"
   );
 
   // Fix for updateBuildingsStyle function
@@ -571,7 +571,7 @@ const NetworkSimulationForm = ({ onStartSimulation, disabled = false, simulation
     <>
       <Helmet>
         <link
-          href="https://cesium.com/downloads/cesiumjs/releases/1.106/Build/Cesium/Widgets/widgets.css"
+          href="https://cesium.com/downloads/cesiumjs/releases/1.125/Build/Cesium/Widgets/widgets.css"
           rel="stylesheet"
         />
       </Helmet>

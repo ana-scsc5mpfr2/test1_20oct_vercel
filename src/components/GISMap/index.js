@@ -112,7 +112,7 @@ const GISMap = ({ gainVector, params, proccessedImages }) => {
     const [maxGlobalValPot, setmaxGlobalValPot] = useState(0);
 
     const status = useScript(
-        "https://cesium.com/downloads/cesiumjs/releases/1.71/Build/Cesium/Cesium.js",
+        "https://cesium.com/downloads/cesiumjs/releases/1.106/Build/Cesium/Cesium.js",  //1.71
         {
             removeOnUnmount: true,
         }
@@ -1098,7 +1098,7 @@ console.log('Normalized PDF:', normalizedBins);
         <>
             <Helmet>
                 <link
-                    href="https://cesium.com/downloads/cesiumjs/releases/1.106/Build/Cesium/Widgets/widgets.css"
+                    href="https://cesium.com/downloads/cesiumjs/releases/1.126/Build/Cesium/Widgets/widgets.css"//1.106
                     rel="stylesheet"
                 />
             </Helmet>
