@@ -673,7 +673,7 @@ const NetworkSimulationForm = ({ onStartSimulation, disabled = false, simulation
 
        {/* In the General Settings section, add this new field: */}
        <div className="space-y-2">
-            <label className="block text-sm text-gray-300">Área de estudio (entre 500m^2 y 2000m^2) </label>
+            <label className="block text-sm text-gray-300">Longitud de Área de estudio (entre 500m y 2000m) </label>
             <input
               type="number"
               name="studyAreaSize"
